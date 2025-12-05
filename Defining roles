@@ -1,0 +1,4 @@
+User: default role, can onlyt access his/her data
+admin:
+doctor: can access all users data
+admin and doctor require verification to set up
