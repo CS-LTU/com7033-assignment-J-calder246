@@ -2,6 +2,8 @@
 IMPORTING LIBRARIES
 """
 
+
+
 from IPython.display import display, Javascript
 from flask import Flask, request, redirect, render_template, flash, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,58 +13,6 @@ from pymongo import MongoClient;
 from bson.objectid import ObjectId;
 import pandas as pd;
 
-
-app = Flask(__name__) #initialises app
-#storing registered users
-users = []
-
-"""
-ROUTES
-"""
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-#route to contact
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-"""
-REGISTRATION AND LOGIN
-"""
-#route to registration
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        user_id = request.form['id'].strip()
-
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']
-        #storing user details in a dictionary
-        user = {
-            'id': user_id,
-            'email': email,
-            'password': password,
-            'role': role
-        }
-        users.append(user) #adding new user to list of users
-        #displaying alert message using javascript
-        display(Javascript('alert("Registration successful!")'))
-        return redirect(url_for('home'))
-    return render_template('registration.html')
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        #checking user credentials
-        for user in users:
-            if user['email'] == email and user['password'] == password:
-                display(Javascript('alert("Login successful!")'))
-                return redirect(url_for('home'))
-        display(Javascript('alert("Invalid email or password.")'))
-    return render_template('login.html')
 """
 AUTHENTICATION WITH SQLite
 """
@@ -130,6 +80,60 @@ def do_register():
     finally:
         conn.close()
         return redirect(url_for('users'))
+
+app = Flask(__name__) #initialises app
+app.config['SECRET_KEY'] = 'your_secret_key' #sets secret key for session management]
+#storing registered users
+users = []
+
+"""
+ROUTES
+"""
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+#route to contact
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+"""
+REGISTRATION AND LOGIN
+"""
+#route to registration
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        user_id = request.form['id'].strip()
+
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form['role']
+        #storing user details in a dictionary
+        user = {
+            'id': user_id,
+            'email': email,
+            'password': password,
+            'role': role
+        }
+        users.append(user) #adding new user to list of users
+        #displaying alert message using javascript
+        display(Javascript('alert("Registration successful!")'))
+        return redirect(url_for('home'))
+    return render_template('registration.html')
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        #checking user credentials
+        for user in users:
+            if user['email'] == email and user['password'] == password:
+                display(Javascript('alert("Login successful!")'))
+                return redirect(url_for('home'))
+        display(Javascript('alert("Invalid email or password.")'))
+    return render_template('login.html')
+
 
 """
 INTEGRATING MONGODB
