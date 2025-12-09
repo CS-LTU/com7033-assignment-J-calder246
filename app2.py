@@ -45,12 +45,14 @@ def register():
     # @app.route('/register', methods=['POST'])
 def do_register():
     id = request.form.get("id", "").strip()
-    email = request.form.get("email", "").strip()
+    username = request.form.get("email", "").strip()
     password = request.form.get("password", "")
 
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
 
 #route to contact
 @app.route('/contact')
