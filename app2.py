@@ -3,12 +3,8 @@ IMPORTING LIBRARIES
 """
 
 from IPython.display import display, Javascript
-from flask import Flask, request, redirect, render_template, flash, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3
-import os
+from flask import Flask, request, redirect, render_template, url_for
 from pymongo import MongoClient;
-from bson.objectid import ObjectId;
 import pandas as pd;
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
