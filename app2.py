@@ -3,7 +3,7 @@ IMPORTING LIBRARIES
 """
 
 from IPython.display import display, Javascript
-from flask import Flask, request, redirect, render_template, url_for
+from flask import Flask, request, redirect, render_template, url_for, flash
 from pymongo import MongoClient;
 import pandas as pd;
 from flask_sqlalchemy import SQLAlchemy
@@ -36,23 +36,14 @@ login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.init_app(app) 
 
-#routes
+# Initialize users list (for demo purposes - should use database in production)
+users = []
 
-@app.route('/')
-def register():
-    return render_template('registration.html')
-    #handling user ragistration
-    # @app.route('/register', methods=['POST'])
-def do_register():
-    id = request.form.get("id", "").strip()
-    username = request.form.get("email", "").strip()
-    password = request.form.get("password", "")
+#routes
 
 @app.route('/')
 def home():
     return render_template('home.html')
-
-
 
 #route to contact
 @app.route('/contact')
@@ -95,7 +86,7 @@ def login():
         display(Javascript('alert("Invalid email or password.")'))
     return render_template('login.html')
 
-@app.route('/')
+@app.route('/index')
 def index():
     collections = db.list_collection_names()
     data_dict = {}

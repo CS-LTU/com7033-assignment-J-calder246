@@ -2,5 +2,10 @@ flask
 flask-login
 flask-wtf
 wtforms
-werkzeug 
-functools
+werkzeug
+flask-sqlalchemy
+pymongo
+pandas
+ipython
+matplotlib
+

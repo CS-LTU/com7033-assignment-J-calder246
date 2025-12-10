@@ -1,4 +1,6 @@
 {
     "python.defaultInterpreterPath": "${workspaceFolder}/vm.venv/bin/python",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.defaultPackageManager": "ms-python.python:pip"
 }
