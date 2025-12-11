@@ -103,15 +103,15 @@ background-color: #e6e6e6;;   /*grey */
     <header>
         <h1>Health Centre</h1>
         <nav>
-            <a href="#">Dashboard</a>
+            <a href="/index.html">Dashboard</a>
             
-            <a href="#">Contact</a>
+            <a href="contact.html">Contact</a>
         </nav>
     </header>
 
     <section class="hero">
         <h2>Data collections (stroke risk)</h2>
-{% for medicaldata, strokedata in data.items() %}
+        {% for strokedata in data %}
 <h3>Stroke risk dataset</h3>
 {{ strokedata|safe }}
 {% endfor %}

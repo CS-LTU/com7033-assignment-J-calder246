@@ -132,19 +132,56 @@ def logout():
 #______________
 #ROUTE TO USER PROFILE
 #_______________
-@app.route("/profile')
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    uid = session.get("customer_id")
+    conn = get_db()
+    cur = conn.cursor()
+    if request.method =="POST":
+        username = request.form.get("username", "").strip()
+        new_password = request.form.get("new_password", "")
+        age = request.form.get("age", "").strip()
+
+        if not (username and age.isdigit() and int(age) >= 13):
+            flash("Invalid input. Please ensure all fields are correctly filled.", "danger")
+            return redirect(url_for("profile"))
+        try:
+            if (new_password):
+                if len(new_password) <8:
+                    flash("password must be at least 8 characters long", "danger")
+                    return redirect(url_for("profile"))
+                pw_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+                cur.execute("UPDATE users SET username = ?, age = ?, password_hash = ? WHERE id =?", (username, int(age), pw_hash, uid))
+            else:
+                cur.execute("UPDATE users SET username = ?, age = ?, WHERE id = ?", username, int(age), uid)
+            conn.commit()
+        except sqlite3.IntegrityError:
+            flash("Username already exists. Please choose another.", "danger")
+            conn.close()
+            return redirect(url_for("profile"))
+        session["username"] = username
+        flash("Profile updated", "success")
+        log_action("UPDATE_PROFILE", session.get("customer_id"), {"username": username})
+    
+    cur.execute("SELECT id, username customer_id, age FROM users WHERE id = ?", (uid))
+    user = cur.fetchone()
+    conn.close()
+    return render_template("profile.html", user=user)
+
+    
+              
 
 #route to user data
 @app.route("/patientview")
 @login_required
 def patientview():
-    cid = session.get("customer_id")
-    stroke_collection = get_db().stroke_records  
+    customer_id = session.get("customer_id")
     try:
-        records = list(stroke_collection.find({"customer_id": cid}))
+        data = list(stroke_collection.find({"customer_id": customer_id})) #retrieve the mongodb data using the customer_id laid down in the session
     except Exception:
-        records = []
-    return render_template("patientview.html", records=records)
+        data = []
+    return render_template("patientview.html", data=data)
 
 
 #_____________
@@ -155,7 +192,7 @@ def patientview():
 @app.route("/admindashboard")
 @admin_required
 def admindashboard():
-    return render_template("admin/dashboard.html")
+    return render_template("admin/admindashboard.html")
 #page only for admins
 
 #route for admin to view users (sql)

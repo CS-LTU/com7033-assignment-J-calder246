@@ -16,7 +16,7 @@ def init_sqlite_db():
     #table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
-    _id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     customer_id TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL
