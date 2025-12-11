@@ -16,9 +16,9 @@ def init_sqlite_db():
     #table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
-    customer_id INTEGER PRIMARY KEY AUTOINCREMENT
-    id TEXT NOT NULL UNIQUE,
+    _id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
+    customer_id TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL
     )
     """)
@@ -28,15 +28,11 @@ def init_sqlite_db():
     ON users(username)
     """)
     
-    #admin table
-    cur.execute("""
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_admins_username_unique
-                ON users(username)
-                """)
+    
     #making a table for admins
     cur.execute("""
     CREATE TABLE IF NOT EXISTS admins(
-                id TEXT PRIMARY KEY
+                customer_id TEXT PRIMARY KEY
     )
     """)
     conn.commit()

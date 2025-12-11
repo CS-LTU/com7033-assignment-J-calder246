@@ -8,7 +8,7 @@ from services_admin import is_admin
 def login_required(f):
     @wraps(f)
     def inner(*args, **kwargs):
-        if "customer_id" not in session:
+        if "_id" not in session:
             flash("Please log in first.", "warning")
             return redirect(url_for("login"))
         return f(*args, **kwargs)
@@ -19,7 +19,7 @@ def login_required(f):
 def admin_required(f):
     @wraps(f)
     def inner(*args, **kwargs):
-        cid = session.get("customer_id")
+        cid = session.get("_id")
         if not cid:
             flash("please log in first.", "warning!")
             return redirect(url_for("login"))

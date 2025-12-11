@@ -1,7 +1,8 @@
 from pathlib import Path
 import os
 
-ROOT = Path(__file__).parent.parent.resolve()
+# Use absolute path to ensure we're in the right directory
+ROOT = Path('/workspaces/com7033-assignment-J-calder246').resolve()
 TEMPLATES = ROOT / 'templates'
 UPLOADS = ROOT / 'uploads'
 
@@ -13,10 +14,9 @@ except (PermissionError, OSError) as e:
     if not UPLOADS.exists():
         raise Exception(f"Cannot create uploads directory: {e}")
 
-assert TEMPLATES.exists(), "templates / folder not found"
-
 print("Using templates", TEMPLATES.resolve())
 print("Using uploads", UPLOADS.resolve())
+print("Templates exists:", TEMPLATES.exists())
 
 
 
@@ -24,5 +24,5 @@ print("Using uploads", UPLOADS.resolve())
 from app4 import app
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5350)#run flask app
+    app.run(debug=True, host='0.0.0.0', port=5370)#run flask app
 

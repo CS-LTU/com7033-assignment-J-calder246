@@ -104,15 +104,19 @@
     
         </div>
 <h2>User Registration</h2>
-    <form method="POST" action="{{ url_for('do_register') }}">
+    <form method="POST" action="{{ url_for('register') }}">
      <div class="container">  
          <label for="id">ID:</label>
          <input type="text" id="id" name="id" required>
     </div>
 
         <div class="container">  
-         <label for="email">Email:</label>
-         <input type="emai;" id="email" name="email" required>
+         <label for="username">Username:</label>
+         <input type="text" id="username" name="username" required>
+    </div>
+    <div class="container">  
+         <label for="age">Age:</label>
+         <input type="text" id="age" name="age" required>
     </div>
         
         <div class="container">  

@@ -70,13 +70,31 @@
             border-radius: 8px;
 
         }
-    
+    /* ---------- table STYLES ---------- */
+
+table {
+border-collapse: collapse;
+margin-bottom: 20px;
+}
+table, th, td {
+border: 1px solid black;
+}
+th, td {
+padding: 10px;
+text-align: center;
+}
+th {
+background-color: #e6e6e6;;   /*grey */
+}
+
+       
 
 
 
     </style>
 
     </head>
+
 
 <body>
 
@@ -90,3 +108,16 @@
             <a href="#">Create</a>
         </nav>
     </header>
+
+    <section class="hero">
+        <h2>Data collections (stroke risk)</h2>
+{% for medicaldata, strokedata in data.items() %}
+<h3>Stroke risk dataset</h3>
+{{ strokedata|safe }}
+{% endfor %}
+</section>
+
+
+</body>
+</html>
+        

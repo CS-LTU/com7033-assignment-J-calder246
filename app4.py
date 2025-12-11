@@ -19,7 +19,7 @@ from services_admin import is_admin
 from services_logging import log_action, stroke_collection
 
 
-app = Flask(__name__, template_folder="../templates")
+app = Flask(__name__, template_folder="templates")
 app.secret_key = Config.SECRET_KEY
 
 #esurses runtime folders and bootstaps DB/admin
@@ -89,19 +89,23 @@ def login():
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("""   SELECT id, username, password_hash
+        cur.execute("""   SELECT _id, username, customer_id, password_hash
             FROM users
             WHERE username = ?
             """, (username,))
         user = cur.fetchone()
         conn.close()
 
-        if user and bcrypt.checkpw(password.encode("utf-8"), user["password_hash"].decode("utf-8")):
+        if user and bcrypt.checkpw(password.encode("utf-8"), user["password_hash"].encode("utf-8")):
             session["username"] = user["username"]
-            session["id"] = user["id"]
+            session["_id"] = user["_id"]
+            session["customer_id"] = user["customer_id"]
             session["is_admin"] = is_admin(user["customer_id"])
             flash("Login successful!", "success")
-            log_action("USER_LOGIN", username, {})
+            try:
+                log_action("USER_LOGIN", user["customer_id"], {})
+            except Exception as e:
+                print(f"Logging failed: {e}")
             return redirect(url_for("index" if session["is_admin"] else "user.dashboard"))
         else:
             flash("Username and/or password not recognised", "danger")
@@ -115,7 +119,7 @@ def login():
 #logout
 @app.route("/logout")
 def logout():
-    cid = session.get("customer_id")
+    cid = session.get("_id")
     session.clear()
     flash("Successfully logged out.", "info")
     if cid:
@@ -156,7 +160,7 @@ def admindashboard():
 def admin_view_users():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id, username, customer_id FROM users ORDER BY id DESC")
+    cur.execute("SELECT _id, username, customer_id FROM users ORDER BY _id DESC")
     USERS = [dict(row) for row in cur.fetchall()]
     conn.close()
 
@@ -187,7 +191,7 @@ def delete_user(customer_id):
     
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM users WHERE customer_id = ?", (customer_id))
+    cur.execute("SELECT _id FROM users WHERE customer_id = ?", (customer_id,))
     row = cur.fetchone()
     if not row:
           conn.close()

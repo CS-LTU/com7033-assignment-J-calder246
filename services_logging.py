@@ -14,7 +14,7 @@ logs_collection = mdb['logs']  # collection of logs created
 
 
 
-def log_action(action, actor_cid, details=None):
+def log_action(action, actor_customer_cid, details=None):
     try:
         logs_collection.insert_one({
             "action": action,

@@ -95,21 +95,20 @@
     <header>
         <h1>Health Centre</h1>
         <nav>
-            <a href="#">Home</a>
-            <a href="#">Register</a>
-            <a href="#">Contact</a>
+            <a href="/home">Home</a>
+            <a href="/registration">Register</a>
+            <a href="/contact">Contact</a>
         </nav>
     </header>
 
     
         </div>
 <h2>User Login</h2>
-    <form method="POST" action="{{ url_for('do_login') }}">
+    <form method="POST" action="{{ url_for('login') }}">
      <div class="container">  
          <label for="id">ID:</label>
-         <input type="text" id="id" name="id" required>
+         <input type="id" id="id" name="id" required>
     </div>
-
         <div class="container">  
          <label for="username">Username:</label>
          <input type="username" id="username" name="username" required>
