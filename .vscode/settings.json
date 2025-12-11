@@ -1,5 +1,13 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/vm.venv/bin/python",
+    "python.defaultInterpreterPath": "/home/codespace/.python/current/bin/python3",
+    "python.pythonPath": "/home/codespace/.python/current/bin/python3",
+    "python.terminal.activateEnvironment": false,
+    "python.terminal.executeInFileDir": true,
+    "python.analysis.extraPaths": [
+        "/home/codespace/.python/current/lib/python3.12/site-packages",
+        "/usr/local/python/3.12.1/lib/python3.12/site-packages"
+    ],
+    "python.analysis.packageIndexDepth": 3,
     "python-envs.pythonProjects": [],
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.defaultPackageManager": "ms-python.python:pip"

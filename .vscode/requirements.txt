@@ -1,0 +1,12 @@
+flask
+flask-login
+flask-wtf
+wtforms
+werkzeug
+flask-sqlalchemy
+pymongo
+pandas
+ipython
+matplotlib
+
+pathlib
