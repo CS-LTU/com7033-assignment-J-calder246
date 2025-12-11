@@ -78,8 +78,8 @@
         }
         form { max-width: 420px; display: grid; gap: .75rem; }
         label {font-weight: 600; }
-        input[type="text"] input[type="email"], input[type="password"]{
-            width: 100%; padding: .8rem ,75rem; border: 1px solid #ccd; border-radius: .5rem;
+        input[type="text"], input[type="email"], input[type="password"]{
+            width: 100%; padding: .8rem .75rem; border: 1px solid #ccc; border-radius: .5rem;
         }
         input[type="submit"] {
             padding: .8rem .9rem; border: 0; border-radius: .4rem; cursor: pointer;
@@ -105,13 +105,9 @@
         </div>
 <h2>User Login</h2>
     <form method="POST" action="{{ url_for('login') }}">
-     <div class="container">  
-         <label for="id">ID:</label>
-         <input type="id" id="id" name="id" required>
-    </div>
         <div class="container">  
          <label for="username">Username:</label>
-         <input type="username" id="username" name="username" required>
+         <input type="text" id="username" name="username" required>
     </div>
         
         <div class="container">  

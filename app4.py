@@ -106,7 +106,7 @@ def login():
                 log_action("USER_LOGIN", user["customer_id"], {})
             except Exception as e:
                 print(f"Logging failed: {e}")
-            return redirect(url_for("index" if session["is_admin"] else "user.dashboard"))
+            return redirect(url_for("admindashboard" if session["is_admin"] else "patientview"))
         else:
             flash("Username and/or password not recognised", "danger")
             return redirect(url_for("login"))
@@ -129,6 +129,10 @@ def logout():
     #_____________
 #_________________User view
 #__________________
+#______________
+#ROUTE TO USER PROFILE
+#_______________
+@app.route("/profile')
 
 #route to user data
 @app.route("/patientview")
@@ -151,7 +155,7 @@ def patientview():
 @app.route("/admindashboard")
 @admin_required
 def admindashboard():
-    return render_template("dashboard.html")
+    return render_template("admin/dashboard.html")
 #page only for admins
 
 #route for admin to view users (sql)
