@@ -1,0 +1,68 @@
+[
+  {
+    "action": "BOOTSTRAP",
+    "actor_customer_id": "system",
+    "details": {},
+    "timestamp": "2025-12-11T00:00:00"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-11T22:23:20.762628"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "31112",
+    "details": {},
+    "ts": "2025-12-11T22:33:19.304480"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "admin001",
+    "details": {},
+    "ts": "2025-12-11T22:34:08.818500"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-11T22:35:08.937533"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "testcid1",
+    "details": {},
+    "ts": "2025-12-11T22:37:59.823628"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "seedcid1",
+    "details": {},
+    "ts": "2025-12-11T22:45:55.627501"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-11T23:49:19.783659"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-11T23:52:45.915372"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-12T00:52:04.669083"
+  },
+  {
+    "action": "USER_LOGIN",
+    "actor_customer_id": "9046",
+    "details": {},
+    "ts": "2025-12-12T01:00:44.517574"
+  }
+]

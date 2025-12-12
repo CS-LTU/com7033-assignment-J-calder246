@@ -16,3 +16,6 @@ def safe_save_upload(file_storage, upload_folder=None):
     file_storage.save(filepath)
     return filepath, filename
 
+'''
+Path("auth_utils.py").write_text(code)
+print("auth_utils.py loaded")'''

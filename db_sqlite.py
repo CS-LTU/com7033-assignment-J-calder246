@@ -1,4 +1,6 @@
+from pathlib import Path
 
+code = ''''''
 
 import sqlite3
 from config import Config
@@ -37,3 +39,7 @@ def init_sqlite_db():
     """)
     conn.commit()
     conn.close()
+
+'''
+Path("db_sqlite.py").write_text(code)
+print("db_sqlite.py loaded")'''

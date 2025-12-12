@@ -76,30 +76,24 @@
             background: #e6e6e6; /*  gray button */
             color: #333; /* Dark gray text */
         }
+/* ---------- table STYLES ---------- */
 
-/* ---------- FEATURE column ---------- */
-.features {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #FFDAB9;
-}         
-
-
-.feature-box {
-    background: #FFDAB9; /* Peach (I love peach) */
-    margin: 5px;
-    border: 2px solid #000080;
-    padding: 25px; /* Space inside each feature card */
-    /* Adds a soft shadow:
-       - x offset: 0
-       - y offset: 2px
-       - blur: 6px
-       - colour: black */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+table {
+border-collapse: collapse;
+margin-bottom: 20px;
 }
+table, th, td {
+border: 1px solid black;
+}
+th, td {
+padding: 10px;
+text-align: center;
+}
+th {
+background-color: #e6e6e6;;   /*grey */
+}
+
+       
 
     </style>
 </head>
@@ -107,46 +101,87 @@
 <body>
 
     <header>
-        <h1>Health Centre: Admin Dashboard</h1>
+        <h1>Health Centre</h1>
         <nav>
+            <a href="/index.html">Dashboard</a>
             
-            <a href="/admin/users">Users</a>
-            <a href="">Read</a>
-            
+            <a href="contact.html">Contact</a>
+
+             <a href="patientviewhtml">patient view</a>
         </nav>
     </header>
+    {% extends "base.html" %}
+{% block content %}
 
-    <section class="hero">
-        <h2>Implement CRUD as an admin</h2>
-        <p>Securely access
- your medical Records with The Health Centre. "Because a healthy body, starts with healthy IT"</p>
+<div class="container mt-4">
+    <h2 class="mb-4">Patient Record: ID {{ record.id }}</h2>
 
-        
-    </section>
+    <table class="table table-bordered table-striped">
 
-    <section class="features">
-        <div class="feature-box">
-            <h3>🖊️ Create users 🖊️ </h3>
-            <p>Create user with all necessary details</p>
-        </div>
+        <tr>
+            <th>ID</th>
+            <td>{{ record.id }}</td>
+        </tr>
 
-        <div class="feature-box">
-            <h3>📄 Read table of all users 📄</h3>
-            <p>View all user information in a comprehensive table format.</p>
-        </div>
+        <tr>
+            <th>Gender</th>
+            <td>{{ record.gender }}</td>
+        </tr>
 
-        <div class="feature-box">
-            <h3>➕ Update users ➕</h3>
-            <p>Update Incorrect or out of date user information</p>
-        </div>
+        <tr>
+            <th>Age</th>
+            <td>{{ record.age }}</td>
+        </tr>
 
-        <div class="feature-box">
-            <h3>🗑️ Delete Users 🗑️</h3>
-            <p>Remove users who don;t want to be on the database anymore.</p>
-        </div>
+        <tr>
+            <th>Hypertension</th>
+            <td>{{ "Yes" if record.hypertension == 1 else "No" }}</td>
+        </tr>
 
-        
-    </section>
+        <tr>
+            <th>Heart Disease</th>
+            <td>{{ "Yes" if record.heart_disease == 1 else "No" }}</td>
+        </tr>
 
+        <tr>
+            <th>Ever Married</th>
+            <td>{{ record.ever_married }}</td>
+        </tr>
+
+        <tr>
+            <th>Work Type</th>
+            <td>{{ record.work_type }}</td>
+        </tr>
+
+        <tr>
+            <th>Residence Type</th>
+            <td>{{ record.Residence_type }}</td>
+        </tr>
+
+        <tr>
+            <th>Average Glucose Level</th>
+            <td>{{ record.avg_glucose_level }}</td>
+        </tr>
+
+        <tr>
+            <th>BMI</th>
+            <td>{{ record.bmi }}</td>
+        </tr>
+
+        <tr>
+            <th>Smoking Status</th>
+            <td>{{ record.smoking_status }}</td>
+        </tr>
+
+        <tr>
+            <th>Stroke Occurrence</th>
+            <td>{{ "Yes" if record.stroke == 1 else "No" }}</td>
+        </tr>
+    </table>
+
+    <a href="{{ url_for('patientview') }}" class="btn btn-secondary mt-3">Back</a>
+</div>
+
+{% endblock %}
 </body>
 </html>

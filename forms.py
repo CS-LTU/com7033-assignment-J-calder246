@@ -1,3 +1,8 @@
+from pathlib import Path
+
+code = '''
+
+
 #importing libraries
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, IntegerField, SelectField, BooleanField, SubmitField, FloatField
@@ -29,3 +34,7 @@ class PatientForm(FlaskForm):
     smoking_status = SelectField('smoking_status', choices=[('formerly smoked', 'formerly smoked'), ('never smoked', 'never smoked'), ('smokes', 'smokes')])
     stroke = IntegerField('stroke', validators=[InputRequired(), NumberRange(min=0, max=1)])
     submit = SubmitField('Submit Patient')
+
+    '''
+Path("forms.py").write_text(code)
+print("forms.py loaded")

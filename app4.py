@@ -7,6 +7,10 @@ from flask import (
 Flask, request, redirect, render_template, url_for, flash, session )
 import bcrypt
 import pandas as pd
+from flask_wtf import FlaskForm
+from wtforms import IntegerField, SubmitField
+
+
 
 #importations from python files
 
@@ -26,6 +30,26 @@ app.secret_key = Config.SECRET_KEY
 os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 bootstrap_once()
 
+#______
+#___Fix for not finding specific id
+#______
+
+@app.route("/patient/<pid>")
+@login_required
+def patient_record(pid):
+    try:
+        # MongoDB stores most values as strings, so ensure match type
+        record = stroke_collection.find_one({"id": int(pid)})
+    except Exception:
+        record = None
+
+    if not record:
+        flash("Patient record not found.", "warning")
+        return redirect(url_for("patientview"))
+
+    return render_template("patientrecord.html", record=record)
+
+
 #----------
 #ROUTE TO HOME
 #___________
@@ -41,38 +65,47 @@ def home():
 @app.route("/registration", methods=["GET", "POST"])
 def register():
     if request.method == 'POST':
-        id = request.form.get("id", "").strip() #strip() removes black spaces
+
+        customer_id = request.form.get("id", "").strip()        
         username = request.form.get("username", "").strip()
-        
         age = request.form.get("age", "").strip()
         password = request.form.get("password", "").strip()
-        confirm_password = request.form.get("confirm password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
 
-        if not (id and username and password and confirm_password):
+        if not (customer_id and username and password and confirm_password and age):
             flash('All fields are required.', 'error')
+            return render_template('registration.html')
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
-        if not age.isdigit() or int(age) < 13:   #age>13 for GDPR  compliance (not data on kids)
-            flash('age must be a number and at least 13', 'error')
+            return render_template('registration.html')
+        if not age.isdigit() or int(age) < 13:
+            flash('Age must be a number and at least 13', 'error')
+            return render_template('registration.html')
         if len(password) < 8:
             flash('Password must be at least 8 characters long.', 'error')
             return render_template('registration.html')
+       
+
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-
+        conn = None
         try:
             conn = get_db()
             cursor = conn.cursor()
-    
-            cursor.execute("INSERT INTO users (username, customer_id, password_hash) VALUES (?, ?, ?)", (username, id, hashed_password))
+            cursor.execute(
+                "INSERT INTO users (username, customer_id, password_hash) VALUES (?, ?, ?)",
+                (username, customer_id, hashed_password)
+            )
             conn.commit()
-            conn.close()
             flash('Registration successful! Please log in.', 'success')
-            return redirect('/login')
+            return redirect(url_for('login'))
         except sqlite3.IntegrityError:
-            flash('ID already exists. Please choose a different one. or login', 'error')
+            flash('ID already exists. Please choose a different one or login', 'error')
+        except Exception as e:
+            flash(f'Unexpected error during registration: {e}', 'danger')
         finally:
-            conn.close()
+            if conn:
+                conn.close()
     return render_template('registration.html')
 
     
@@ -177,10 +210,37 @@ def profile():
 @login_required
 def patientview():
     customer_id = session.get("customer_id")
+    
+    if not customer_id:
+        flash("Please log in to view patient data.", "warning")
+        return redirect(url_for("login"))
+
     try:
-        data = list(stroke_collection.find({"customer_id": customer_id})) #retrieve the mongodb data using the customer_id laid down in the session
-    except Exception:
-        data = []
+        # Ensure we query using a string type (Mongo records often store customer_id as string)
+        cid = str(customer_id)
+        data = list(stroke_collection.find({"customer_id": cid}))
+        # If no records found for this customer (common with local fallback where sample ids differ),
+        # show available sample records so the UI can be inspected.
+        if not data:
+            try:
+                data = list(stroke_collection.find())
+                if data:
+                    flash("No personal records found — showing available sample records.", "info")
+            except Exception:
+                data = []
+        app.logger.debug("patientview: customer_id=%s records=%d", cid, len(data))
+    except Exception as e:
+
+        # If Mongo is unreachable (common in restricted/networked environments),
+        # log the exception and show a small sample dataset so the UI can be inspected.
+        app.logger.exception("Error fetching records for customer_id=%s: %s", customer_id, e)
+        flash("Unable to reach the medical database — showing sample data for now.", "warning")
+        data = [
+            {"id": 1, "gender": "Female", "age": 68, "hypertension": 0, "heart_disease": 1, "stroke": 1, "customer_id": cid},
+            {"id": 2, "gender": "Male", "age": 54, "hypertension": 1, "heart_disease": 0, "stroke": 0, "customer_id": cid},
+        ]
+
+
     return render_template("patientview.html", data=data)
 
 
@@ -317,11 +377,25 @@ def admin_view_patients():
     data = list(stroke_collection.find())
     return render_template("admin/patients.html", records=data)
 
+#________
+#_fix for table not coming up
+#_________
+from services_logging import stroke_collection
+try:
+    print('count all', stroke_collection.count_documents({}))
+except Exception as e:
+    print('mongo error:', type(e).__name__, e)
+
+
+
 #__________
 #Run app
 #________
 if __name__ == "__main__":
     bootstrap_once()   #ensures admin account exists
-    app.run(hosts="0.0.0.0", port=1010, debug=False)
+    app.run(host="0.0.0.0", port=5869, debug=False)
 
-    
+
+
+
+

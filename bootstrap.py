@@ -1,7 +1,9 @@
 
 import bcrypt
 from db_sqlite import init_sqlite_db, get_db
-from services_logging import log_action
+
+# Import logging action lazily to avoid circular import / startup failures
+
 
 """
 BOOTSTRAP LOGIC"""
@@ -35,6 +37,9 @@ def bootstrap_once():
         conn.close()
         
         try:
+            # import here to avoid import-time issues when services_logging
+            # needs other modules that are not yet ready.
+            from services_logging import log_action
             log_action("CREATED_DEFAULT_ADMIN", customer_id, {})
         except Exception as e:
             print(f"Logging failed: {e}")
@@ -42,3 +47,5 @@ def bootstrap_once():
 def ensure_bootstrap():
     """Ensure bootstrap runs exactly once"""
     bootstrap_once()
+
+    

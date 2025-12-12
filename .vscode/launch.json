@@ -2,24 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Flask App",
+      "name": "Python: Run app3 (venv)",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/run.py",
+      "program": "${workspaceFolder}/app3.py",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/.vscode",
-      "env": {
-        "FLASK_APP": "app4.py",
-        "FLASK_ENV": "development"
-      }
-    },
-    {
-      "name": "Python: Current File",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal",
-      "cwd": "${fileDirname}"
+      "cwd": "${workspaceFolder}",
+      "env": {},
+      "python": "${workspaceFolder}/vm.venv/bin/python"
     }
   ]
 }

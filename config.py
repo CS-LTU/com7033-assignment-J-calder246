@@ -1,5 +1,6 @@
 
 import os
+from flask import Flask
 
 #configuration
 class Config:
@@ -12,9 +13,8 @@ class Config:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     #Mongo configuration
-    MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://2511607_db_user:8eOYxezbnZPcBiHh@stroke-dataset.w6p63mq.mongodb.net/")
+    MONGO_URI: str = os.environ.get("MONGO_URI", "mongodb+srv://2511607_db_user:8eOYxezbnZPcBiHh@stroke-dataset.w6p63mq.mongodb.net/")
     MONGO_DB = "medicaldata"
     MONGO_STROKE_COLLECTION = "strokedata"
     MONGO_LOGS_COLLECTION = "logs"
-
 

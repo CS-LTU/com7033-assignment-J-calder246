@@ -106,19 +106,85 @@ background-color: #e6e6e6;;   /*grey */
             <a href="/index.html">Dashboard</a>
             
             <a href="contact.html">Contact</a>
+
+             <a href="patientdatahtml">Your Data</a>
         </nav>
     </header>
 
-    <section class="hero">
-        <h2>Data collections (stroke risk)</h2>
-        {% for strokedata in data %}
-<h3>Stroke risk dataset</h3>
-{{ strokedata|safe }}
-{% endfor %}
-        
-        </div>
+   {% block content %}
 
-        
+<div class="container mt-4">
+    <h2 class="mb-4">Patient Record: ID {{ record.id }}</h2>
+
+    <table class="table table-bordered table-striped">
+
+        <tr>
+            <th>ID</th>
+            <td>{{ record.id }}</td>
+        </tr>
+
+        <tr>
+            <th>Gender</th>
+            <td>{{ record.gender }}</td>
+        </tr>
+
+        <tr>
+            <th>Age</th>
+            <td>{{ record.age }}</td>
+        </tr>
+
+        <tr>
+            <th>Hypertension</th>
+            <td>{{ "Yes" if record.hypertension == 1 else "No" }}</td>
+        </tr>
+
+        <tr>
+            <th>Heart Disease</th>
+            <td>{{ "Yes" if record.heart_disease == 1 else "No" }}</td>
+        </tr>
+
+        <tr>
+            <th>Ever Married</th>
+            <td>{{ record.ever_married }}</td>
+        </tr>
+
+        <tr>
+            <th>Work Type</th>
+            <td>{{ record.work_type }}</td>
+        </tr>
+
+        <tr>
+            <th>Residence Type</th>
+            <td>{{ record.Residence_type }}</td>
+        </tr>
+
+        <tr>
+            <th>Average Glucose Level</th>
+            <td>{{ record.avg_glucose_level }}</td>
+        </tr>
+
+        <tr>
+            <th>BMI</th>
+            <td>{{ record.bmi }}</td>
+        </tr>
+
+        <tr>
+            <th>Smoking Status</th>
+            <td>{{ record.smoking_status }}</td>
+        </tr>
+
+        <tr>
+            <th>Stroke Occurrence</th>
+            <td>{{ "Yes" if record.stroke == 1 else "No" }}</td>
+        </tr>
+    </table>
+
+    <a href="{{ url_for('patientview') }}" class="btn btn-secondary mt-3">Back</a>
+</div>
+
+{% endblock %}
+
+
     </section>
 
 </body>
