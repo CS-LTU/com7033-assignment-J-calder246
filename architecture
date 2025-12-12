@@ -1,0 +1,28 @@
+System architecture, flask, sqlite and mongoDB
+_____________________________
+[												    ]
+[				Flask application		]
+[		      							    ]
+[                           ] 
+[___________________________]                
+					[]
+__________[]_________________________________					
+[												                    ]
+[												                    ]_
+v__________________________     __________________________         < _ _                          [				]
+[ Authentication and		]			      [ Role-based access		]
+[Session Management           ]			[(@login required      ]
+[  (bcrypt + sessin function	]			[  (@admin_required		]
+____________________________			____________________________	
+                            []
+                            []
+                            []
+                             V
+______________________________________________________________________________
+[                    ][                        ][                            ]
+[  SQLite db         ][   MongoDB strokedata   ][  MongoDB logs              ]
+[  User login data   ][ User medical data      ][  where logs are kept       ]
+[  stored here       ][ stored and retrieved   ][  who logs in and when      ]
+[                    ][  from here             ][  and failed login attempts ]
+[                    ][                        ][                            ]
+______________________________________________________________________________
