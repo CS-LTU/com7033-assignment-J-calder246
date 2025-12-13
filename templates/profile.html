@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+
+    <section class="hero">
+        <h2>Your Health Records, Anytime</h2>
+        <p>Securely access
+ your medical Records with The Health Centre. "Because a healthy body, starts with healthy IT"</p>
+ <nav class="btn-group">
+            <a class="btn btn-primary" href="/logout">Logout</a>
+            <a class="btn btn-secondary" href="/patientrecord/{{session.get('customer_id')}}">search data</a>
+ </nav>
+    </section>
+
+    <section class="features">
+        <div class="feature-box">
+            <h3>📄 View Records 📄</h3>
+            <p>Access lab results, diagnoses, and medical notes in one place.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>🖊️ Manage data 🖊️</h3>
+            <p>Request that The Health Centre edits or removes your data</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>🔒 Secure & Private 🔒</h3>
+            <p>Built in encryption, input sanitisation and Input Validation, to keep your data secure.</p>
+        </div>
+
+        
+    </section>
+
+{% endblock %}

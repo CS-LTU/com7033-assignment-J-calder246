@@ -24,5 +24,5 @@ print("Templates exists:", TEMPLATES.exists())
 from app4 import app
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5869)#run flask app
+    app.run(debug=True, host='0.0.0.0', port=5069)#run flask app
 

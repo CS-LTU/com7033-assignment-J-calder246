@@ -15,16 +15,16 @@ def get_db():
 def init_sqlite_db():
     conn = get_db()
     cur = conn.cursor()
-    #table
+    # Ensure users table has a stable schema. keep backwards compatibility
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
-    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    customer_id TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL
+        _id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        customer_id INTEGER NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL
     )
     """)
-    #make username unique
+    # make username unique
     cur.execute("""
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique
     ON users(username)

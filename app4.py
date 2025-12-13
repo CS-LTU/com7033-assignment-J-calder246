@@ -1,90 +1,86 @@
-
 import os
 import sqlite3
 from datetime import datetime
 
+from bson.objectid import ObjectId
 from flask import (
-Flask, request, redirect, render_template, url_for, flash, session )
+    Flask, request, redirect, render_template, url_for, flash, session
+)
 import bcrypt
 import pandas as pd
-from flask_wtf import FlaskForm
-from wtforms import IntegerField, SubmitField
 
 
 
-#importations from python files
-
+# local imports
 from config import Config
 from db_sqlite import get_db
 from bootstrap import bootstrap_once
 from auth_utils import allowed_file, safe_save_upload
 from decorators import login_required, admin_required
 from services_admin import is_admin
-from services_logging import log_action, stroke_collection
+from services_logging import log_action
 
 
-app = Flask(__name__, template_folder="templates")
-app.secret_key = Config.SECRET_KEY
 
-#esurses runtime folders and bootstaps DB/admin
+
+
+# resources runtime folders and bootstraps DB/admin
 os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 bootstrap_once()
 
-#______
-#___Fix for not finding specific id
-#______
+app = Flask(__name__)
+app.secret_key = 'Secret_key'
 
-@app.route("/patient/<pid>")
-@login_required
-def patient_record(pid):
-    try:
-        # MongoDB stores most values as strings, so ensure match type
-        record = stroke_collection.find_one({"id": int(pid)})
-    except Exception:
-        record = None
-
-    if not record:
-        flash("Patient record not found.", "warning")
-        return redirect(url_for("patientview"))
-
-    return render_template("patientrecord.html", record=record)
+# stroke_collection and logs_collection are provided by services_logging
+try:
+    from services_logging import stroke_collection, logs_collection
+except Exception:
+    stroke_collection = None
+    logs_collection = None
 
 
-#----------
-#ROUTE TO HOME
-#___________
 
 
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if request.method =='POST':
+        file = request.files['file']
+        if file and file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+            records = df.to_dict(orient='records')
+            stroke_collection.insert_many(records)
+            flash('data successfully stored', "success")
+            return redirect(url_for('home'))
+        else:
+            flash('invalid file type, please upload a CSV file', "danger")
+            return redirect(request.url)
+        return render_template('upload.html')
+
+# ---------- ROUTES ----------
 @app.route('/')
 def home():
     return render_template('home.html')
 
-#--------------------
-#Registraation route
-#_____________________
+# --------------------
+# Registration route
+# --------------------
 @app.route("/registration", methods=["GET", "POST"])
 def register():
     if request.method == 'POST':
-
-        customer_id = request.form.get("id", "").strip()        
+        customer_id = request.form.get("id", "").strip()
         username = request.form.get("username", "").strip()
-        age = request.form.get("age", "").strip()
         password = request.form.get("password", "").strip()
         confirm_password = request.form.get("confirm_password", "").strip()
 
-        if not (customer_id and username and password and confirm_password and age):
+        if not (customer_id and username and password and confirm_password):
             flash('All fields are required.', 'error')
             return render_template('registration.html')
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
             return render_template('registration.html')
-        if not age.isdigit() or int(age) < 13:
-            flash('Age must be a number and at least 13', 'error')
-            return render_template('registration.html')
         if len(password) < 8:
             flash('Password must be at least 8 characters long.', 'error')
             return render_template('registration.html')
-       
 
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -108,12 +104,9 @@ def register():
                 conn.close()
     return render_template('registration.html')
 
-    
-#________________
-#Login page
-#_________________
-
-#log in
+# ----------------
+# Login page
+# ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -122,10 +115,11 @@ def login():
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("""   SELECT _id, username, customer_id, password_hash
+        cur.execute("""
+            SELECT rowid AS _id, username, customer_id, password_hash
             FROM users
             WHERE username = ?
-            """, (username,))
+        """, (username,))
         user = cur.fetchone()
         conn.close()
 
@@ -138,40 +132,38 @@ def login():
             try:
                 log_action("USER_LOGIN", user["customer_id"], {})
             except Exception as e:
-                print(f"Logging failed: {e}")
-            return redirect(url_for("admindashboard" if session["is_admin"] else "patientview"))
+                app.logger.debug(f"Logging failed: {e}")
+            return redirect(url_for("admindashboard" if session["is_admin"] else "profile"))
         else:
             flash("Username and/or password not recognised", "danger")
             return redirect(url_for("login"))
     return render_template("login.html")
 
-    #_______________
-#LOGOUT ROUTE
-#_________________
-
-#logout
+# ---------------
+# Logout
+# ---------------
 @app.route("/logout")
 def logout():
-    cid = session.get("_id")
+    cid = session.get("customer_id")
     session.clear()
     flash("Successfully logged out.", "info")
     if cid:
-        log_action("LOGOUT", cid, {})
+        try:
+            log_action("LOGOUT", cid, {})
+        except Exception:
+            pass
     return redirect(url_for("home"))
 
-    #_____________
-#_________________User view
-#__________________
-#______________
-#ROUTE TO USER PROFILE
-#_______________
+# ---------------
+# Profile
+# ---------------
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     uid = session.get("customer_id")
     conn = get_db()
     cur = conn.cursor()
-    if request.method =="POST":
+    if request.method == "POST":
         username = request.form.get("username", "").strip()
         new_password = request.form.get("new_password", "")
         age = request.form.get("age", "").strip()
@@ -180,14 +172,14 @@ def profile():
             flash("Invalid input. Please ensure all fields are correctly filled.", "danger")
             return redirect(url_for("profile"))
         try:
-            if (new_password):
-                if len(new_password) <8:
-                    flash("password must be at least 8 characters long", "danger")
+            if new_password:
+                if len(new_password) < 8:
+                    flash("Password must be at least 8 characters long", "danger")
                     return redirect(url_for("profile"))
                 pw_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-                cur.execute("UPDATE users SET username = ?, age = ?, password_hash = ? WHERE id =?", (username, int(age), pw_hash, uid))
+                cur.execute("UPDATE users SET username = ?, age = ?, password_hash = ? WHERE customer_id = ?", (username, int(age), pw_hash, uid))
             else:
-                cur.execute("UPDATE users SET username = ?, age = ?, WHERE id = ?", username, int(age), uid)
+                cur.execute("UPDATE users SET username = ?, age = ? WHERE customer_id = ?", (username, int(age), uid))
             conn.commit()
         except sqlite3.IntegrityError:
             flash("Username already exists. Please choose another.", "danger")
@@ -195,205 +187,245 @@ def profile():
             return redirect(url_for("profile"))
         session["username"] = username
         flash("Profile updated", "success")
-        log_action("UPDATE_PROFILE", session.get("customer_id"), {"username": username})
-    
-    cur.execute("SELECT id, username customer_id, age FROM users WHERE id = ?", (uid))
+        try:
+            log_action("UPDATE_PROFILE", session.get("customer_id"), {"username": username})
+        except Exception:
+            pass
+
+    cur.execute("SELECT rowid AS id, username, customer_id, age FROM users WHERE customer_id = ?", (uid,))
     user = cur.fetchone()
     conn.close()
     return render_template("profile.html", user=user)
 
-    
-              
-
-#route to user data
-@app.route("/patientview")
+# -------------------------
+# patientdata - search page
+# -------------------------
+@app.route("/patient")
 @login_required
-def patientview():
+def patient():
     customer_id = session.get("customer_id")
-    
+
     if not customer_id:
-        flash("Please log in to view patient data.", "warning")
-        return redirect(url_for("login"))
+        flash("No customer ID found in session.", "danger")
+        return redirect(url_for("profile"))
 
+    # Try matching Mongo 'id' as integer
+    record = None
     try:
-        # Ensure we query using a string type (Mongo records often store customer_id as string)
-        cid = str(customer_id)
-        data = list(stroke_collection.find({"customer_id": cid}))
-        # If no records found for this customer (common with local fallback where sample ids differ),
-        # show available sample records so the UI can be inspected.
-        if not data:
-            try:
-                data = list(stroke_collection.find())
-                if data:
-                    flash("No personal records found — showing available sample records.", "info")
-            except Exception:
-                data = []
-        app.logger.debug("patientview: customer_id=%s records=%d", cid, len(data))
-    except Exception as e:
+        record = stroke_collection.find_one({"id": int(customer_id)})
+    except Exception:
+        pass
+    # fallback: try string match
+    if not record:
+        record = stroke_collection.find_one({"id": str(customer_id)})
 
-        # If Mongo is unreachable (common in restricted/networked environments),
-        # log the exception and show a small sample dataset so the UI can be inspected.
-        app.logger.exception("Error fetching records for customer_id=%s: %s", customer_id, e)
-        flash("Unable to reach the medical database — showing sample data for now.", "warning")
-        data = [
-            {"id": 1, "gender": "Female", "age": 68, "hypertension": 0, "heart_disease": 1, "stroke": 1, "customer_id": cid},
-            {"id": 2, "gender": "Male", "age": 54, "hypertension": 1, "heart_disease": 0, "stroke": 0, "customer_id": cid},
-        ]
+    # fallback: try customer_id field (not usually in dataset, but safe)
+    if not record:
+        record = stroke_collection.find_one({"customer_id": str(customer_id)})
+   
+    if not record:
+        flash("No medical record found for your registered ID.", "warning")
+        return redirect(url_for("profile"))
+
+    return render_template("patient.html", record=record)
+
+# -------------------------
 
 
-    return render_template("patientview.html", data=data)
-
-
-#_____________
-#~~~~~~ADMIN TOOLS~~~~~~~~~
-#_____________
-
-#admin dashboard route
+# -------------
+# ADMIN PAGES
+# -------------
 @app.route("/admindashboard")
 @admin_required
 def admindashboard():
-    return render_template("admin/admindashboard.html")
-#page only for admins
+    return render_template("admindashboard.html")
 
-#route for admin to view users (sql)
-@app.route("/admin/users")
+@app.route("/ad_patients")
 @admin_required
-def admin_view_users():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT _id, username, customer_id FROM users ORDER BY _id DESC")
-    USERS = [dict(row) for row in cur.fetchall()]
-    conn.close()
-
-    #marks administrator flag for display
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT customer_id FROM admins")
-    admin_cids = {r[0] for r in cur.fetchall()}#set of customerids (aadmin)
-    conn.close()
-    for user in USERS:
-        user["is admin"] = user["customer_id"] in admin_cids
-    return render_template("admin/users.html", users=USERS)
-
-
-#_______
-##ADDING CRUD FUNCTIONALITIES FOR ADMINS (create read update delete)
-#________
-
-
-@app.route("/admin/delete/<customer_id>", methods=["POST"])
+def index():
+    #gets all data from strokedata collection
+    docs = list(stroke_collection.find())
+    for doc in docs:
+        doc['_id'] = str(doc['_id'])  #converts objectid to string not regular id
+        return render_template('ad_patients.html', records=docs)
+#__________________
+#DELETE USER
+# Admin delete route with parameter in URL
+@app.route("/ad_patients", methods=["POST"])
 @admin_required
-def delete_user(customer_id):
-    #code to prevent adaming delting him/her self
-    admin_cid = session.get("customer_id")
-    if customer_id == admin_cid:
-        flash("You cannot delete your own admin account.", "danger")
-        return redirect(url_for("admin_view_users"))
+def delete_user():
+    stroke_collection.delete_one({"customer_id": request.form.get("customer_id")})
+    return redirect(url_for("ad_patients"))
+#__________________
+#UPDATE USER
+#__________________
+@app.route("/ad_update", methods=["GET"])
+@admin_required
+def update_user():
+    doc = stroke_collection.find_one({"_id_": ObjectId(id)})  #bases update of objectid (_id)
     
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT _id FROM users WHERE customer_id = ?", (customer_id,))
-    row = cur.fetchone()
-    if not row:
-          conn.close()
-          flash("User not founder", "warning")
-          return redirect(url_for("admin_view_users"))
-    
-    #delete from users (admin only)
-    cur.execute("DELETE FROM users WHERE customer_id = ?", (customer_id,)) #deletes from table
-    conn.commit()
-    conn.close()
+    if not doc:
+        flash("User not found.", "danger")
+        return redirect(url_for("ad_patients"))
+    doc['_id'] = str(doc['_id'])
+    return render_template("ad_update.html", record=doc)
+#handle edit submit and selct what to change
+@app.route("/ad_update_submit", methods=["POST"])
+@admin_required
+def update_user_submit():
+    id = request.form.get("id")
+    gender = request.form.get("gender")
+    age = request.form.get("age")
+    hypertension = request.form.get("hypertension")
+    heart_disease = request.form.get("heart_disease")
+    ever_married = request.form.get("ever_married")
+    work_type = request.form.get("work_type")
+    Residence_type = request.form.get("Residence_type")
+    avg_glucose_level = request.form.get("avg_glucose_level")
+    bmi = request.form.get("bmi")
+    smoking_status = request.form.get("smoking_status")
+    stroke = request.form.get("stroke")
 
-    try:
-        stroke_collection.delete_many({"customer_id": customer_id})
-    except Exception:
-        pass
-        
-    flash("user and user info deleted", "success")
-    log_action("DELETE_USER", admin_cid, {"deleted_customer_id": customer_id})
-    return redirect(url_for("admin_view_users"))
+    updated_data = {
+        "id" : int(id),
+        "gender" : gender,
+        "age" : int(age),
+        "hypertension" : int(hypertension),
+        "heart_disease" : int(heart_disease),
+        "ever_married" : int(ever_married),
+        "work_type" : int(work_type),
+        "Residence_type" : int(Residence_type),
+        "avg_glucose_level" : (avg_glucose_level),
+        "bmi" : bmi,
+        "smoking_status": int(smoking_status),
+        "stroke" : int(stroke)
+        }
 
+    stroke_collection.update_one({"_id": ObjectId(id)}, {"$set": updated_data})
+    flash("User records have been updated.", "success")
+    return redirect(url_for("ad_patients"))
+
+#___________
 #create user
-@app.route("/admin/create", methods=["GET", "POST"])
+#___________
+@app.route('/ad_create')
 @admin_required
-def create_user():  
+def create_user():
+    return render_template('ad_create.html')
+#handle the submission
+@app.route('/ad_create', methods=['POST'])
+@admin_required
+def add_record():
+    id = request.form.get("id")
+    gender = request.form.get("gender")
+    age = request.form.get("age")
+    hypertension = request.form.get("hypertension")
+    heart_disease = request.form.get("heart_disease")
+    ever_married = request.form.get("ever_married")
+    work_type = request.form.get("work_type")
+    Residence_type = request.form.get("Residence_type")
+    avg_glucose_level = request.form.get("avg_glucose_level")
+    bmi = request.form.get("bmi")
+    smoking_status = request.form.get("smoking_status")
+    stroke = request.form.get("stroke")
+
+    updated_data = {
+        "id" : int(id),
+        "gender" : gender,
+        "age" : int(age),
+        "hypertension" : int(hypertension),
+        "heart_disease" : int(heart_disease),
+        "ever_married" : int(ever_married),
+        "work_type" : int(work_type),
+        "Residence_type" : int(Residence_type),
+        "avg_glucose_level" : (avg_glucose_level),
+        "bmi" : bmi,
+        "smoking_status": int(smoking_status),
+        "stroke" : int(stroke)
+        }
+    #inserting
+    stroke_collection.insert_one(updated_data)
+    flash("New user created successfully.", "success")
+    return redirect(url_for("ad_patients"))
+
+
+
+#______________________
+#ADMIN UPLOADS CSV
+#______________________
+@app.route("/ad_update", methods=["GET", "POST"])
+
+# Admin CSV upload / create user - simplified & safer
+@app.route("/ad_create", methods=["GET", "POST"])
+@admin_required
+def create():
     if request.method == "POST":
-       if 'file' not in request.files:
-              flash("No file part", "danger")
-              return redirect(request.url)
-       file = request.files["file"]
-       if file.filename == "":
+        if 'file' not in request.files:
+            flash("No file part", "danger")
+            return redirect(request.url)
+        file = request.files["file"]
+        if file.filename == "":
             flash("No file has been selected", "danger")
             return redirect(request.url)
-       if not allowed_file(file.filename):
-            flash(" Incorrect file type, please upload a CSV file.", "danger")
+        if not allowed_file(file.filename):
+            flash("Incorrect file type, please upload a CSV file.", "danger")
             return redirect(request.url)
-       
-       path, filename = safe_save_upload(file, Config.UPLOAD_FOLDER)
-       
-    try:
-        df = pd.read_csv(path)
-        required = {"id", "gender", "age", "hypertension", "heart_disease", "ever_married", "work_type", "Residence_type", "avg_glucose_level", "bmi", "smoking_status", "stroke", "customer_id"} #CASE SENSITIVE
-        cols = {c.lower().strip() for c in df.column}
-        if not required.issubset(cols):
-            flash("CSV is missing: '{', '.join(sorted(required))}", "danger")
+
+        path, filename = safe_save_upload(file, Config.UPLOAD_FOLDER)
+        try:
+            df = pd.read_csv(path)
+            # required headers expected (case sensitive in original code)
+            required = {"id", "gender", "age", "hypertension", "heart_disease", "ever_married",
+                        "work_type", "Residence_type", "avg_glucose_level", "bmi", "smoking_status", "stroke", "customer_id"}
+            cols = {c.lower().strip() for c in df.columns}
+            if not required.issubset(cols):
+                flash("CSV is missing required columns.", "danger")
+                return redirect(request.url)
+
+            # cleaning and converting columns (basic safe approaches)
+            df.columns = [c.lower().strip() for c in df.columns]
+            df["id"] = pd.to_numeric(df["id"], errors="coerce").fillna(0).astype(int)
+            df["gender"] = df["gender"].astype(str).fillna("Unknown")
+            df["age"] = pd.to_numeric(df["age"], errors="coerce").fillna(0).astype(int)
+            df["hypertension"] = pd.to_numeric(df["hypertension"], errors="coerce").fillna(0).astype(int)
+            df["heart_disease"] = pd.to_numeric(df["heart_disease"], errors="coerce").fillna(0).astype(int)
+            df["ever_married"] = df["ever_married"].astype(str).fillna("unknown")
+            df["work_type"] = df["work_type"].astype(str).fillna("unknown")
+            df["residence_type"] = df.get("residence_type", df.get("Residence_type", pd.Series())).astype(str).fillna("unknown")
+            df["avg_glucose_level"] = pd.to_numeric(df["avg_glucose_level"], errors="coerce").fillna(0.0).astype(float)
+            df["bmi"] = pd.to_numeric(df["bmi"], errors="coerce").fillna(0.0).astype(float)
+            df["smoking_status"] = df["smoking_status"].astype(str).fillna("unknown")
+            df["stroke"] = pd.to_numeric(df["stroke"], errors="coerce").fillna(0).astype(int)
+
+            records = df.to_dict(orient="records")
+            for record in records:
+                record["uploaded_by"] = session.get("customer_id")
+                record["uploaded_at"] = datetime.utcnow()
+            if records:
+                stroke_collection.insert_many(records)
+            flash(f"Successfully uploaded {len(records)} records.", "success")
+            try:
+                log_action("UPLOAD_DATA", session.get("customer_id"), {"record_count": len(records)})
+            except Exception:
+                pass
+            return redirect(url_for("admindashboard"))
+        except Exception as e:
+            flash(f"Error processing file: {str(e)}", "danger")
             return redirect(request.url)
-        #cleaning and setting headers
-        df.columns = [c.lower().strip() for c in df.columns]
-        df["id"] = pd.to_numeric(df["id"], errors="coerce").filna(1).astype(int)
-        df["gender"] = pd.to_str(df["gender"]).fillna("Unknown").astype(str)
-        df["age"] = pd.to_numeric(df["age"], errors="coerce").fillna(0).astype(int)
-        df["hypertension"] = pd.to_numeric(df["hypertension"], errors="coerce").fillna(0).astype(int)
-        df["heart_disease"] = pd.to_numeric(df["heart_disease"], errors="coerce").fillna(0).astype(int)
-        df["ever_married"] = pd.to_str(df["ever_married"]).fillna("unknown").astype(str)
-        df["work_type"] = pd.to_str(df["work_type"]).fillna("unknown").astype(str)
-        df["residence_type"] = pd.to_str(df["residence_type"]).fillna("unknown").astype(str)
-        df["avg_glucose_level"] = pd.to_numeric(df["avg_glucose_level"]).fillna(0).astype(float)
-        df["bmi"] = pd.to_numeric(df["bmi"], errors="coerce").fillna(0).astype(float)
-        df["smoking_status"] = pd.to_str(df["smoking_status"]).fillna("unknown").astype(str)
-        df["stroke"] = pd.to_numeric(df["stroke"], errors="coerce").fillna(0).astype(int)
+    return render_template("/ad_upload.html")
 
-
-#recording id of editor
-        records = df.to_dict(orient="records")
-        for record in records:
-            record["uploaded_by"] = session.get("customer_id")
-            record["uploaded_ad"] = datetime.utcnow()
-        if records:
-            stroke_collection.insert_many(records)
-        flash(f"Successfully uploaded {len(records)} records.", "success")
-        log_action("UPLOAD_DATA", session.get("customer_id"), {"record_count": len(records)})
-        return redirect(url_for("admindashboard"))
-    except Exception as e:
-        flash(f"Error processing file: {str(e)}", "danger")
-        return redirect(request.url)
-    return render_template("admin/upload.html")
-       
-
-#Route for admin's view
-@app.route("/admin/patients")
+# Admin view patients
+@app.route("/ad_patients")
 @admin_required
 def admin_view_patients():
     data = list(stroke_collection.find())
-    return render_template("admin/patients.html", records=data)
-
-#________
-#_fix for table not coming up
-#_________
-from services_logging import stroke_collection
-try:
-    print('count all', stroke_collection.count_documents({}))
-except Exception as e:
-    print('mongo error:', type(e).__name__, e)
+    return render_template("/ad_patients.html", records=data)
 
 
-
-#__________
-#Run app
-#________
+# Run app
 if __name__ == "__main__":
-    bootstrap_once()   #ensures admin account exists
-    app.run(host="0.0.0.0", port=5869, debug=False)
+    bootstrap_once()
+    app.run(host="0.0.0.0", port=5069, debug=False)
 
 
 

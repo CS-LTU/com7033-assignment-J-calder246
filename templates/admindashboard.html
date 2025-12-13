@@ -1,0 +1,43 @@
+{% extends "base_admin.html" %}
+{% block title %}Patient Data{% endblock %}
+
+{% block content %}
+    
+
+    <section class="hero">
+        <h2>Implement CRUD as an admin</h2>
+        <p>Securely access
+ your medical Records with The Health Centre. "Because a healthy body, starts with healthy IT"</p>
+
+        
+    </section>
+
+    <section class="features">
+        <div class="feature-box">
+            <h3>🖊️ Create users 🖊️ </h3>
+            <p>Create user with all necessary details</p>
+            <a href="/ad_create">Create User</a>
+        </div>
+
+        <div class="feature-box">
+            <h3>📄 Read and Delete 📄</h3>
+            <p>View all user information in a comprehensive table format and edit the data.</p>
+            <a href="/ad_patients">Users</a>
+
+        </div>
+
+        
+
+        <div class="feature-box">
+            <h3>🗑️ Update Users 🗑️</h3>
+            <p>Remove users who don;t want to be on the database anymore.</p>
+            <a href="/ad_delete">Delete User</a>
+        
+    </div>
+        </div>
+
+        
+    </section>
+
+{% endblock %}
+

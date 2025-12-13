@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -76,16 +78,30 @@
             background: #e6e6e6; /*  gray button */
             color: #333; /* Dark gray text */
         }
-        form { max-width: 420px; display: grid; gap: .75rem; }
-        label {font-weight: 600; }
-        input[type="text"], input[type="email"], input[type="password"]{
-            width: 100%; padding: .8rem .75rem; border: 1px solid #ccc; border-radius: .5rem;
-        }
-        input[type="submit"] {
-            padding: .8rem .9rem; border: 0; border-radius: .4rem; cursor: pointer;
-            background: #333; color: white; font-weight: 650;
-        }
-        
+
+/* ---------- FEATURE column ---------- */
+.features {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #FFDAB9;
+}         
+
+
+.feature-box {
+    background: #FFDAB9; /* Peach (I love peach) */
+    margin: 5px;
+    border: 2px solid #000080;
+    padding: 25px; /* Space inside each feature card */
+    /* Adds a soft shadow:
+       - x offset: 0
+       - y offset: 2px
+       - blur: 6px
+       - colour: black */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
 
     </style>
 </head>
@@ -95,30 +111,42 @@
     <header>
         <h1>Health Centre</h1>
         <nav>
-            <a href="/home">Home</a>
+            
+            <a href="/login">Login</a>
             <a href="/registration">Register</a>
             <a href="/contact">Contact</a>
         </nav>
-    </header>
-
-    
+        <main class="container">
+         {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+        </header>
+
+    <section class="hero">
+
+
+
 <h2>User Login</h2>
-    <form method="POST" action="{{ url_for('login') }}">
-        <div class="container">  
-         <label for="username">Username:</label>
-         <input type="text" id="username" name="username" required>
+    <form method="POST"  class="bg-white p-4 rounded shadow-sm">
+  <div class="mb-3"><label class="form-label">Username</label><input class="form-control" name="username" required></div>
+  <div class="mb-3"><label class="form-label">Password</label><input class="form-control" name="password" type="password" required></div></div>
+        
+
     </div>
         
-        <div class="container">  
-         <label for="password">password:</label>
-         <input type="password" id="password" name="password" required>
-    </div>
-        
-        <input type="submit" value="Login">
+        <button class="btn btn-success">Login</button>
     </form>
     
     </section>
 
-</body>
+  </body>
 </html>

@@ -1,0 +1,47 @@
+{% extends "base_admin.html" %}
+{% block title %}Patient Data{% endblock %}
+
+{% block content %}
+
+    
+<h2>Collection: cities</h2>
+<div class="card">
+    <h3>Quick preview (first 10 rows)</h3>
+    {{ preview_table|safe }}
+</div>
+<div class="card">
+    <h3>All records (live)</h3>
+    <table class="data">
+        <thead><tr><th>ID</th><th>name</th><th>country</th><th>population</th><th>actions</th></tr></thead>
+        <tbody>
+        {% for row in records %}
+        <tr>
+            <label for="number">id</label>
+    <input type="text" name="gender" id="gender" required>
+    <label for="number">hypertension</label>
+    <input type="number" name="heart_disease" id="heart_disease" required>
+    <input type="text" name="ever_married" id="ever_married" required>
+    <input type="text" name="work_type" id="work_type" required>
+    <input type="text" name="Residence_type" id="Residence_type" required>
+    <input type="number" name="avg_glucose_level" id="avg_glucose_level" min="0">
+    <input type="number" name="bmi" id="bmi" min="0">
+    <input type="number" name="smoking_status" id="smoking_status" min="0">
+    <input type="number" name="stroke" id="stroke" min="0">
+    <br><br>
+            <td>
+                <a class="button" href="{{ url_for('update_user', id=row['_id']) }}">Edit</a>
+              <a class="button" href="{{ url_for('create_user', id=row['_id']) }}">Create</a>
+                <form class="inline" method="POST" action="{{ url_for('delete_user', id=row['_id']) }}" onsubmit="return confirm('Delete this record?');">
+                    <input class="button" type="submit" value="Delete">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+
+        

@@ -1,120 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Patient Data{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyHealth Portal</title>
-
-    <style>
-        /* ---------- GLOBAL PAGE STYLES ---------- */
-        body {
-            margin: 0; /* Removes default spacing around the page */
-            font-family: Arial, Helvetica, sans-serif; /* Sets the text font */
-            background: #f7f9fc; /* Light gray background color for the whole page */
-            color: #333; /* Dark gray text color */
-        }
-
-        /* ---------- HEADER BAR ---------- */
-        header {
-            background: #0a74da; /* Blue background for the header */
-            color: white; /* White text in the header */
-            padding: 20px 40px; /* 20px top/bottom, 40px left/right spacing */
-            display: flex; /* Aligns the title and navigation side-by-side */
-            justify-content: space-between; /* Places title on left, nav on right */
-            align-items: center; /* Vertically centers header content */
-        }
-
-        header h1 {
-            margin: 0; /* Removes default margin so text aligns cleanly */
-        }
-
-        nav a {
-            color: white; /* White navigation link text */
-            margin-left: 20px; /* Spacing between navigation links */
-            text-decoration: none; /* Removes underline from links */
-            font-weight: bold; /* Makes the link text thicker */
-        }
-
-        /* ---------- HERO SECTION ---------- */
-        .hero {
-            padding: 80px 40px; /* Large spacing to create a tall hero area */
-            background: white; /* White background for the hero section */
-            text-align: center; /* Centers the text horizontally */
-        }
-
-        .hero h2 {
-            font-size: 2.5em; /* Makes the headline large */
-            margin-bottom: 10px; /* Spacing below the headline */
-        }
-
-        .hero p {
-            font-size: 1.2em; /* Slightly larger paragraph text */
-            color: #555; /* Medium gray text color */
-        }
-
-        /* ---------- BUTTON STYLES ---------- */
-        .btn-group {
-            margin-top: 30px; /* Adds spacing above the buttons */
-        }
-
-        .btn {
-            display: inline-block; /* Allows padding + margin like a block, inline like text */
-            padding: 12px 25px; /* Button size: 12px top/bottom, 25px left/right */
-            margin: 10px; /* Space around each button */
-            border-radius: 5px; /* Slightly rounded button corners */
-            text-decoration: none; /* Removes underline from button links */
-            font-size: 1.1em; /* Slightly larger text inside buttons */
-        }
-
-        .btn-primary {
-            background: #0a74da; /* Blue background for main button */
-            color: white; /* White text */
-        }
-
-        .btn-secondary {
-            background: #e6e6e6; /*  gray button */
-            color: #333; /* Dark gray text */
-        }
-
-/* ---------- FEATURE column ---------- */
-.features {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #FFDAB9;
-}         
-
-
-.feature-box {
-    background: #FFDAB9; /* Peach (I love peach) */
-    margin: 5px;
-    border: 2px solid #000080;
-    padding: 25px; /* Space inside each feature card */
-    /* Adds a soft shadow:
-       - x offset: 0
-       - y offset: 2px
-       - blur: 6px
-       - colour: black */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-    </style>
-</head>
-
-<body>
-
-    <header>
-        <h1>Health Centre</h1>
-        <nav>
-            
-            <a href="/index">Dashboard</a>
-            <a href="/patientview">patient view</a>
-            
-        </nav>
-    </header>
+{% block content %}
 
     <section class="hero">
         <h2>Your Health Records, Anytime</h2>
@@ -134,7 +21,7 @@
             <p>Call us at 0118 999 881 999 119 725 3</p>
 
         
+        </div>
     </section>
 
-</body>
-</html>
+{% endblock %}

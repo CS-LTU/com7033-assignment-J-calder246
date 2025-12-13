@@ -1,20 +1,25 @@
-
 import os
-from flask import Flask
+# Config class to hold application
 
-#configuration
 class Config:
-    BASE_DIR = os.getcwd() #current directory
-    SECRET_KEY = os.environ.get("SECRET_KEY", "Buglady458") #makes secret key
+    BASE_DIR = os.getcwd()
+    SECRET_KEY = os.environ.get("SECRET_KEY", "Buglady458")
 
-    DB_PATH = os.path.join(BASE_DIR, "users.db") #path to users.db
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads") #directory to saved csvs
-    ALLOWED_EXTENSIONS = {"csv"} #restricts uploads to csv
+    DB_PATH = os.path.join(BASE_DIR, "users.db")
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+    ALLOWED_EXTENSIONS = {"csv"}
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-    #Mongo configuration
-    MONGO_URI: str = os.environ.get("MONGO_URI", "mongodb+srv://2511607_db_user:8eOYxezbnZPcBiHh@stroke-dataset.w6p63mq.mongodb.net/")
+    # Mongo configuration (URI only; do not connect here)
+    MONGO_URI = os.environ.get(
+        "MONGO_URI",
+        "mongodb+srv://2511607_db_user:SWblAGQdj2rXqau2@stroke-dataset.w6p63mq.mongodb.net/",
+    )
+    
     MONGO_DB = "medicaldata"
     MONGO_STROKE_COLLECTION = "strokedata"
     MONGO_LOGS_COLLECTION = "logs"
 
+
+
+MONGO_CLIENT = None

@@ -1,6 +1,4 @@
-from pathlib import Path
 
-code = '''
 
 
 #importing libraries
@@ -35,6 +33,4 @@ class PatientForm(FlaskForm):
     stroke = IntegerField('stroke', validators=[InputRequired(), NumberRange(min=0, max=1)])
     submit = SubmitField('Submit Patient')
 
-    '''
-Path("forms.py").write_text(code)
-print("forms.py loaded")
+    

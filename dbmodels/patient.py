@@ -1,17 +1,18 @@
-from pymongo import MongoClient;
-from bson.objectid import ObjectId;
-import pandas as pd;
-from flask import Flask, render_template;
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+import pandas as pd
+from flask import Flask, render_template
+import os
 
-# Initialize MongoDB client
-client = MongoClient('mongodb+srv://2511607_db_user:8eOYxezbnZPcBiHh@stroke-dataset.w6p63mq.mongodb.net/')
-
-
-    
-
-# Access database and collection
-db = client['medicaldata']
-collection = db['strokedata']
+# Initialize MongoDB client (guarded for local development)
+if os.environ.get('MONGO_FORCE_LOCAL') == '1':
+    from services_logging import stroke_collection as collection
+    client = None
+    db = None
+else:
+    client = MongoClient('mongodb+srv://2511607_db_user:8eOYxezbnZPcBiHh@stroke-dataset.w6p63mq.mongodb.net/')
+    db = client['medicaldata']
+    collection = db['strokedata']
 
 #Defining patient
 class Patient:
