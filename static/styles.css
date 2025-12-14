@@ -65,7 +65,7 @@ table-layout: fixed;
 
 
 }
-/* ---------- for tables, make small values smaller ---------- */
+/* ---------- MAKE SMALL VALUES ON TABLES SMALLER ---------- */
 .table td.id-col, .table th.id-col {
   width: 80px;
   text-align: center;

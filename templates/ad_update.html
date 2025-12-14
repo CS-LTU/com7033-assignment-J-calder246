@@ -1,7 +1,26 @@
 {% extends "base_admin.html" %}
 {% block content %}
-<h2>Edit Patient</h2>
-<form method="POST" action="{{ url_for('update_user', _id=record['_id']) }}">
+<h2 align="center"> Selected patient data</h2>
+<h5 class="card-title text-primary" align="center">Patient ID: {{ record.id }}</h5>
+            <hr>
+
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr><th>Gender</th><td>{{ record.gender }}</td></tr>
+                    <tr><th>Age</th><td>{{ record.age }}</td></tr>
+                    <tr><th>Hypertension</th><td>{{ record.hypertension }}</td></tr>
+                    <tr><th>Heart Disease</th><td>{{ record.heart_disease }}</td></tr>
+                    <tr><th>Ever Married</th><td>{{ record.ever_married }}</td></tr>
+                    <tr><th>Work Type</th><td>{{ record.work_type }}</td></tr>
+                    <tr><th>Residence Type</th><td>{{ record.Residence_type }}</td></tr>
+                    <tr><th>Avg Glucose Level</th><td>{{ record.avg_glucose_level }}</td></tr>
+                    <tr><th>BMI</th><td>{{ record.bmi }}</td></tr>
+                    <tr><th>Smoking Status</th><td>{{ record.smoking_status }}</td></tr>
+                    <tr> <th>Stroke History</th><td>{{ record.stroke }}</td> </tr>
+                </tbody>
+            </table>
+<h3>Edit Patient</h3>
+<form method="POST" align="center" action="{{ url_for('update_user', _id=record['_id']) }}">
     <p>ID</p><input type="text" name="gender" id="gender">   
     <p>Gender</p><input type="text" name="gender" id="gender">
     <p>Hypertension</p><input type="number" name="hypertension" id="hypertension">

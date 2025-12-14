@@ -15,7 +15,6 @@ import pandas as pd
 from config import Config
 from db_sqlite import get_db
 from bootstrap import bootstrap_once
-from auth_utils import allowed_file, safe_save_upload
 from decorators import login_required, admin_required
 from services_admin import is_admin
 from services_logging import log_action
@@ -200,7 +199,7 @@ def profile():
     return render_template("profile.html", user=user)
 
 # -------------------------
-# patientdata - search page
+# patientdata - Link for users to view their own data
 # -------------------------
 @app.route("/patient")
 @login_required
@@ -230,6 +229,12 @@ def patient():
         return redirect(url_for("profile"))
 
     return render_template("patient.html", record=record)
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
 
 # -------------------------
 
@@ -441,70 +446,6 @@ def add_record():
 
 
 
-#______________________
-#ADMIN UPLOADS CSV
-#______________________
-@app.route("/ad_update", methods=["GET", "POST"])
-
-# Admin CSV upload / create user - simplified & safer
-@app.route("/ad_create", methods=["GET", "POST"])
-@admin_required
-def create():
-    if request.method == "POST":
-        if 'file' not in request.files:
-            flash("No file part", "danger")
-            return redirect(request.url)
-        file = request.files["file"]
-        if file.filename == "":
-            flash("No file has been selected", "danger")
-            return redirect(request.url)
-        if not allowed_file(file.filename):
-            flash("Incorrect file type, please upload a CSV file.", "danger")
-            return redirect(request.url)
-
-        path, filename = safe_save_upload(file, Config.UPLOAD_FOLDER)
-        try:
-            df = pd.read_csv(path)
-            # required headers expected (case sensitive in original code)
-            required = {"id", "gender", "age", "hypertension", "heart_disease", "ever_married",
-                        "work_type", "Residence_type", "avg_glucose_level", "bmi", "smoking_status", "stroke", "customer_id"}
-            cols = {c.lower().strip() for c in df.columns}
-            if not required.issubset(cols):
-                flash("CSV is missing required columns.", "danger")
-                return redirect(request.url)
-
-            # cleaning and converting columns (basic safe approaches)
-            df.columns = [c.lower().strip() for c in df.columns]
-            df["id"] = pd.to_numeric(df["id"], errors="coerce").fillna(0).astype(int)
-            df["gender"] = df["gender"].astype(str).fillna("Unknown")
-            df["age"] = pd.to_numeric(df["age"], errors="coerce").fillna(0).astype(int)
-            df["hypertension"] = pd.to_numeric(df["hypertension"], errors="coerce").fillna(0).astype(int)
-            df["heart_disease"] = pd.to_numeric(df["heart_disease"], errors="coerce").fillna(0).astype(int)
-            df["ever_married"] = df["ever_married"].astype(str).fillna("unknown")
-            df["work_type"] = df["work_type"].astype(str).fillna("unknown")
-            df["residence_type"] = df.get("residence_type", df.get("Residence_type", pd.Series())).astype(str).fillna("unknown")
-            df["avg_glucose_level"] = pd.to_numeric(df["avg_glucose_level"], errors="coerce").fillna(0.0).astype(float)
-            df["bmi"] = pd.to_numeric(df["bmi"], errors="coerce").fillna(0.0).astype(float)
-            df["smoking_status"] = df["smoking_status"].astype(str).fillna("unknown")
-            df["stroke"] = pd.to_numeric(df["stroke"], errors="coerce").fillna(0).astype(int)
-
-            records = df.to_dict(orient="records")
-            for record in records:
-                record["uploaded_by"] = session.get("customer_id")
-                record["uploaded_at"] = datetime.utcnow()
-            if records:
-                stroke_collection.insert_many(records)
-            flash(f"Successfully uploaded {len(records)} records.", "success")
-            try:
-                log_action("UPLOAD_DATA", session.get("customer_id"), {"record_count": len(records)})
-            except Exception:
-                pass
-            return redirect(url_for("admindashboard"))
-        except Exception as e:
-            flash(f"Error processing file: {str(e)}", "danger")
-            return redirect(request.url)
-    return render_template("/ad_upload.html")
-
 # Admin view patients
 @app.route("/ad_patients")
 @admin_required
@@ -575,7 +516,3 @@ _______________
 
 
 
-# Run app
-if __name__ == "__main__":
-    bootstrap_once()
-    app.run(host="0.0.0.0", port=5000, debug=False)

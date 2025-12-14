@@ -75,10 +75,35 @@
         }
 
         .btn-secondary {
-            background: #e6e6e6; /*  gray button */
-            color: #333; /* Dark gray text */
+            background: #e6e6e6; 
+            color: #333; 
+        }
+form{
+    max-width: 200px;
+    display: grid;
+    gap: .75rem;
+}
+        label {
+            font-weight: 600;
         }
 
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: auto;
+            padding: .8rem .75rem;
+            border: 1px solid #ccd;
+            border-radius: .5rem;
+        }
+        input[type="submit"] {
+            padding: .8rem .9rem;
+            border: 0;
+            border-radius: .4rem;
+            cursor: pointer;
+            background: wheat;
+            color: gray;
+            font-weight: 650;
+        }
 /* ---------- FEATURE column ---------- */
 .features {
     display: flex;
@@ -136,14 +161,14 @@
 
 
 <h2>User Login</h2>
-    <form method="POST"  class="bg-gray-100"style="max-width: 300px; margin: auto" action="{{ url_for('login') }}">
-  <div class="mb-3"><label class="form-label">Username</label><input class="form-control" name="username" required></div>
-  <div class="mb-3"><label class="form-label">Password</label><input class="form-control" name="password" type="password" required></div></div>
+    <form method="POST"   class="bg-gray-100"style="max-width: 300px; margin: auto; align: center" action="{{ url_for('login') }}">
+  <div class="mb-3" style= "padding: 20px; width: 400px"  ><label class="form-label">Username</label><input class="form-control" name="username" required></div>
+  <div class="mb-3" style= "padding: 20px; width: 400px ;"><label class="form-label">Password</label><input class="form-control" name="password" type="password" required></div></div>
         
 
     </div>
         
-        <button class="btn btn-success">Login</button>
+        <button class="btn btn-success" style= " background: Blue">Login</button>
     </form>
     
     </section>
