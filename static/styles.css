@@ -1,0 +1,142 @@
+
+
+
+
+
+/* ---------- GLOBAL PAGE STYLES ---------- */
+html, body {
+margin: 0;
+font-family: Arial, Helvetica, sans-serif;
+background: #f7f9fc;
+color: #333;
+}
+
+/* ---------- HEADER BAR ---------- */
+header {
+background: #0a74da;
+color: white;
+padding: 20px 40px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+header h1 {
+margin: 0;
+}
+
+nav a {
+color: white;
+margin-left: 20px;
+text-decoration: none;
+font-weight: bold;
+}
+/*----------- TABLE STYLES ----------*/
+table {
+width: 95%;
+table-layout: fixed;
+}
+th, td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    word-break: keep-all;
+
+
+}
+.custom-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.custom-table th,
+.custom-table td {
+  border: 2px solid #000000;
+  padding: 8px;
+}
+.custom-table {
+width: 95%;
+table-layout: fixed;
+}
+.custom-table th, .custom-table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    word-break: keep-all;
+
+
+}
+/* ---------- for tables, make small values smaller ---------- */
+.table td.id-col, .table th.id-col {
+  width: 80px;
+  text-align: center;
+}
+.table td.age-col, .table th.age-col {
+  width: 80px;
+  text-align: center;
+}
+.table td.bmi-col, .table th.bmi-col {
+  width: 80px;
+  text-align: center;
+}
+
+
+
+
+/* ---------- HERO SECTION ---------- */
+.hero {
+padding: 80px 40px;
+background: white;
+text-align: center;
+}
+
+.hero h2 {
+font-size: 2.5em;
+margin-bottom: 10px;
+}
+
+.hero p {
+font-size: 1.2em;
+color: #555;
+}
+
+/* ---------- BUTTON STYLES ---------- */
+.btn-group {
+margin-top: 30px;
+}
+
+.btn {
+display: inline-block;
+padding: 12px 25px;
+margin: 10px;
+border-radius: 5px;
+text-decoration: none;
+font-size: 1.1em;
+}
+
+.btn-primary {
+background: #0a74da;
+color: white;
+}
+
+.btn-secondary {
+background: #e6e6e6;
+color: #333;
+}
+
+/* ---------- FEATURE column ---------- */
+.features {
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+margin: 0;
+background-color: #FFDAB9;
+}
+
+.feature-box {
+background: #FFDAB9;
+margin: 5px;
+border: 2px solid #000080;
+padding: 25px;
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}

@@ -66,8 +66,8 @@ def home():
 # --------------------
 @app.route("/registration", methods=["GET", "POST"])
 def register():
-    if request.method == 'POST':
-        customer_id = request.form.get("id", "").strip()
+    if request.method == 'POST':    
+        customer_id = request.form.get("customer_id", "").strip()
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
         confirm_password = request.form.get("confirm_password", "").strip()
@@ -166,20 +166,22 @@ def profile():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         new_password = request.form.get("new_password", "")
-        age = request.form.get("age", "").strip()
+        confirm_new_password = request.form.get("confirm_password", "")
+        
 
-        if not (username and age.isdigit() and int(age) >= 13):
-            flash("Invalid input. Please ensure all fields are correctly filled.", "danger")
-            return redirect(url_for("profile"))
+        
         try:
             if new_password:
                 if len(new_password) < 8:
                     flash("Password must be at least 8 characters long", "danger")
                     return redirect(url_for("profile"))
+                if new_password != confirm_new_password:
+                    flash("passwords must match", "danger")
+                    return redirect(url_for("profile"))
                 pw_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-                cur.execute("UPDATE users SET username = ?, age = ?, password_hash = ? WHERE customer_id = ?", (username, int(age), pw_hash, uid))
+                cur.execute("UPDATE users SET username = ?, password_hash = ? WHERE customer_id = ?", (username,  pw_hash, uid))
             else:
-                cur.execute("UPDATE users SET username = ?, age = ? WHERE customer_id = ?", (username, int(age), uid))
+                cur.execute("UPDATE users SET username = ?, WHERE customer_id = ?", (username, ))
             conn.commit()
         except sqlite3.IntegrityError:
             flash("Username already exists. Please choose another.", "danger")
@@ -192,7 +194,7 @@ def profile():
         except Exception:
             pass
 
-    cur.execute("SELECT rowid AS id, username, customer_id, age FROM users WHERE customer_id = ?", (uid,))
+    cur.execute("SELECT rowid AS id, username, customer_id FROM users WHERE customer_id = ?", (uid,))
     user = cur.fetchone()
     conn.close()
     return render_template("profile.html", user=user)
@@ -240,36 +242,125 @@ def patient():
 def admindashboard():
     return render_template("admindashboard.html")
 
+
+
+
 @app.route("/ad_patients")
 @admin_required
-def index():
+def ad_patients():
     #gets all data from strokedata collection
     docs = list(stroke_collection.find())
+   
     for doc in docs:
         doc['_id'] = str(doc['_id'])  #converts objectid to string not regular id
-        return render_template('ad_patients.html', records=docs)
+    if docs:
+        df = pd.DataFrame(docs).head(5)
+        preview_table = df.to_html(classes='data' ' table-striped', index=False)
+        return render_template('ad_patients.html', records=docs, preview_table=preview_table)
+    
+    
 #__________________
-#DELETE USER
+#DELETE USER ()
+
+
 # Admin delete route with parameter in URL
-@app.route("/ad_patients", methods=["POST"])
+@app.route("/delete/<customer_id>", methods=["POST"])
 @admin_required
-def delete_user():
-    stroke_collection.delete_one({"customer_id": request.form.get("customer_id")})
-    return redirect(url_for("ad_patients"))
+def delete_user(customer_id):
+    # prevent admin deleting themselves
+    admin_cid = session.get("customer_id")
+    if customer_id == admin_cid:
+        flash("You cannot delete your own admin account.", "danger")
+        return redirect(url_for("ad_patients"))
+    try:
+        cur.execute("SELECT customer_id FROM users WHERE customer_id = ?", (customer_id,))
+        row = cur.fetchone()
+        if row:
+            cur.execute("DELETE FROM users WHERE customer_id = ?", (customer_id,))
+            cur.execute("DELETE FROM admins WHERE customer_id = ?", (customer_id,))
+            conn.commit()
+            conn.close()
+            # delete any matching Mongo records by customer_id
+            try:
+                if stroke_collection is not None:
+                    stroke_collection.delete_many({"customer_id": customer_id})
+            except Exception:
+                pass
+            flash("User account and related records deleted", "success")
+            try:
+                log_action("DELETE_USER", admin_cid, {"deleted_customer_id": customer_id})
+            except Exception:
+                pass
+            return redirect(url_for("ad_patients"))
+    except Exception:
+        # ensure connection closed on error
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    # If not found in users table, maybe it's a Mongo _id
+        try:
+            oid = ObjectId(customer_id)
+            doc = None
+            doc = stroke_collection.find_one({"_id": oid}) #finds objectis from mongo
+            if doc:
+                # if document contains a customer_id, it'll remove corresponding sqlite user
+                doc_cid = doc.get("id") #finds the short id from mongo (ie: 1657) that corresponds to the objectid found above
+                if doc_cid:
+                    try:
+                        conn = get_db()
+                        cur = conn.cursor()
+                        cur.execute("DELETE FROM users WHERE customer_id = ?", (doc_cid,)) #finds short id in sqlite (where it is stored as customer_id) and deletes it
+                        cur.execute("DELETE FROM admins WHERE customer_id = ?", (doc_cid,))
+                        conn.commit()
+                        conn.close()
+                    except Exception:
+                        pass
+                try:
+                    stroke_collection.delete_one({"_id": oid}) #deletes dataset in mongoDB
+                except Exception:
+                    pass
+                flash("Patient record deleted", "success")
+                try:
+                    log_action("DELETE_RECORD", admin_cid, {"deleted_record_id": customer_id}) #logs deletion
+                except Exception:
+                    pass
+                return redirect(url_for("ad_patients"))
+        except Exception:
+            pass                              
+                                      
+    '''
+    try:
+        stroke_collection.delete_one({"_id": ObjectId(_id)})
+        flash("User deleted", "success")
+    except Exception:
+        flash("Error deleting user.", "danger")
+    return redirect(url_for("admindashboard"))
+    '''
+
+
+    
+
 #__________________
 #UPDATE USER
 #__________________
-@app.route("/ad_update", methods=["GET"])
+
+@app.route("/ad_update/<_id>", methods=["GET"])
 @admin_required
-def update_user():
-    doc = stroke_collection.find_one({"_id_": ObjectId(id)})  #bases update of objectid (_id)
+def update_user(_id):
+    doc = stroke_collection.find_one({"_id": ObjectId(_id)})  #bases update of objectid (_id)
     
     if not doc:
         flash("User not found.", "danger")
         return redirect(url_for("ad_patients"))
     doc['_id'] = str(doc['_id'])
     return render_template("ad_update.html", record=doc)
-#handle edit submit and selct what to change
+
+
+#____________
+#Update
+#____________
 @app.route("/ad_update_submit", methods=["POST"])
 @admin_required
 def update_user_submit():
@@ -292,9 +383,9 @@ def update_user_submit():
         "age" : int(age),
         "hypertension" : int(hypertension),
         "heart_disease" : int(heart_disease),
-        "ever_married" : int(ever_married),
-        "work_type" : int(work_type),
-        "Residence_type" : int(Residence_type),
+        "ever_married" : (ever_married),
+        "work_type" : (work_type),
+        "Residence_type" : (Residence_type),
         "avg_glucose_level" : (avg_glucose_level),
         "bmi" : bmi,
         "smoking_status": int(smoking_status),
@@ -330,23 +421,23 @@ def add_record():
     stroke = request.form.get("stroke")
 
     updated_data = {
-        "id" : int(id),
+        "id" : str(id),
         "gender" : gender,
-        "age" : int(age),
-        "hypertension" : int(hypertension),
-        "heart_disease" : int(heart_disease),
-        "ever_married" : int(ever_married),
-        "work_type" : int(work_type),
-        "Residence_type" : int(Residence_type),
-        "avg_glucose_level" : (avg_glucose_level),
-        "bmi" : bmi,
-        "smoking_status": int(smoking_status),
-        "stroke" : int(stroke)
+        "age" : str(age),
+        "hypertension" : str(hypertension),
+        "heart_disease" : str(heart_disease),
+        "ever_married" : str(ever_married),
+        "work_type" : str(work_type),
+        "Residence_type" : str(Residence_type),
+        "avg_glucose_level" : float(avg_glucose_level),
+        "bmi" : float(bmi),
+        "smoking_status": str(smoking_status),
+        "stroke" : str(stroke)
         }
     #inserting
     stroke_collection.insert_one(updated_data)
     flash("New user created successfully.", "success")
-    return redirect(url_for("ad_patients"))
+    return redirect(url_for('admindashboard'))
 
 
 
@@ -421,13 +512,70 @@ def admin_view_patients():
     data = list(stroke_collection.find())
     return render_template("/ad_patients.html", records=data)
 
+'''
+#Route to search for specific id
+@app.route("/patientdata", methods=["GET", "POST"])
+@admin_required
+def patientdata():   #previously patientdata template when not associated with admin permissions
+    record = []
+    if request.method == "POST":
+        customer_id = request.form["customer_id"].strip()
+        conn: sqlite3.Connection = sqlite3.connect('users.db')
+        cur = conn.cursor()
+        cur.execute("SELECT username, customer_id FROM users WHERE customer_id = ?", (customer_id,))
+        user = cur.fetchone()
+        conn.close()
+        # Try matching Mongo 'id' as integer
+        if user:
+            record = stroke_collection.find_one({"id": int(customer_id)})
+        else:
+            flash("no user found", "danger")
+            
+    return render_template("searchdata.html", record=record)
+
+'''
+'''
+record = []
+        try:
+            record = stroke_collection.find_one({"id": int(customer_id)})
+        except Exception:
+            pass
+
+        # fallback: try customer_id field (not usually in dataset, but safe)
+        if not record:
+            record = stroke_collection.find_one({"customer_id": str(customer_id)})
+
+    
+   
+        if not record:
+            flash("No medical record found for your registered ID.", "warning")
+            return redirect(url_for("profile"))
+_______________
+ #matching both strings to MongoDB
+        if user:
+            # Attempt to match both numeric and string id types in MongoDB
+            results = []
+            try:
+                #fix for search feature
+                pid = int("customer_id") #converts customer_id (which is stored as a string) into an integer with name pid
+                # try numeric id match
+                results = list(stroke_collection.find({"id": pid}))
+            except Exception:
+                # fallback to string match
+                results = list(stroke_collection.find({"id": str(customer_id)}))
+
+            # If no exact id matches, also try by customer_id field (some imports store that)
+            if not results:
+                results = list(stroke_collection.find({"customer_id": str(customer_id)}))
+
+            return render_template('presearchtest.html', data=results, username=user[0])
+        else:
+            flash("no user found", "danger")
+'''
+
+
 
 # Run app
 if __name__ == "__main__":
     bootstrap_once()
-    app.run(host="0.0.0.0", port=5069, debug=False)
-
-
-
-
-
+    app.run(host="0.0.0.0", port=5000, debug=False)

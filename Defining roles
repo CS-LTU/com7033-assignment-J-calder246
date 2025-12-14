@@ -1,4 +1,3 @@
-User: default role, can onlyt access his/her data
-admin:
-doctor: can access all users data
-admin and doctor require verification to set up
+User: default role, can only access his/her data and create account
+admin: Can you CRUD: Create user data, Read all user data, Update user data and delete user data
+

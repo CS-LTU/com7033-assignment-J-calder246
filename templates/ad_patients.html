@@ -3,42 +3,74 @@
 
 {% block content %}
 
-    
-<h2>Collection: cities</h2>
+<h1>Patient Data</h1>
+
 <div class="card">
     <h3>Quick preview (first 10 rows)</h3>
     {{ preview_table|safe }}
 </div>
-<div class="card">
-    <h3>All records (live)</h3>
-    <table class="data">
-        <thead><tr><th>ID</th><th>name</th><th>country</th><th>population</th><th>actions</th></tr></thead>
+    <h2>All records</h2>
+    <h3>Update and Delete Records Here!</h3>
+    <div class="card">
+    
+     <table class="custom-table">
+        
+        <thead>
+            <tr>
+                <th>ObjectID</th>
+                <th>ID</th>
+                <th>gender</th>
+                <th>age</th>
+                <th>hypertension</th>
+                <th>heart disease</th>
+                <th>ever married</th>
+                <th>work type</th>
+                <th>Residence type</th>
+                <th>AGL</th>
+                <th>bmi</th>
+                <th>smokes</th>
+                <th>stroke</th>
+                <th>actions</th>
+            </tr>
+        </thead>
         <tbody>
         {% for row in records %}
         <tr>
-            <label for="number">id</label>
-    <input type="text" name="gender" id="gender" required>
-    <label for="number">hypertension</label>
-    <input type="number" name="heart_disease" id="heart_disease" required>
-    <input type="text" name="ever_married" id="ever_married" required>
-    <input type="text" name="work_type" id="work_type" required>
-    <input type="text" name="Residence_type" id="Residence_type" required>
-    <input type="number" name="avg_glucose_level" id="avg_glucose_level" min="0">
-    <input type="number" name="bmi" id="bmi" min="0">
-    <input type="number" name="smoking_status" id="smoking_status" min="0">
-    <input type="number" name="stroke" id="stroke" min="0">
-    <br><br>
+            <td>{{ row.get('_id','') }}</td>
+            <td>{{ row.get('id','') }}</td>
+            <td>{{ row.get('gender','')}}</td>
+            <td>{{ row.get('age','')}}</td>
+            <td>{{ row.get('hypertension','')}}</td>
+            <td >{{ row.get('heart_disease','')}}</td>
+            <td >{{ row.get('ever_married','')}}</td>
+            <td >{{ row.get('work_type','')}}</td>
+            <td >{{ row.get('Residence_type','')}}</td>
+            <td >{{ row.get('avg_glucose_level','')}}</td>
+            <td >{{ row.get('bmi','')}}</td>
+            <td >{{ row.get('smoking_status','')}}</td>
+            <td >{{ row.get('stroke','')}}</td>
             <td>
-                <a class="button" href="{{ url_for('update_user', id=row['_id']) }}">Edit</a>
-              <a class="button" href="{{ url_for('create_user', id=row['_id']) }}">Create</a>
-                <form class="inline" method="POST" action="{{ url_for('delete_user', id=row['_id']) }}" onsubmit="return confirm('Delete this record?');">
+               
+                <form class="button"  href="{{ url_for('update_user', _id=row['_id']) }}"
+               <input class="button" type="submit" value="Update">
+                </form>
+               <form class="inline" method="GET"  action="{{ url_for('update_user', _id=row['_id']) }}" );">
+                    <input class="button" type="submit" value="Update">
+                </form>
+                <form class="inline" method="POST"  action="{{ url_for('delete_user', customer_id=row['_id']) }}" onsubmit="return confirm('Delete this record?');">
                     <input class="button" type="submit" value="Delete">
                 </form>
+                
             </td>
         </tr>
         {% endfor %}
         </tbody>
+
+
+               
+        
     </table>
+    </div>
 </div>
 
 {% endblock %}

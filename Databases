@@ -1,2 +1,2 @@
-SQLite: Authenication (emails passwords)
+SQLite: Authenication (username, customer_id (for reference) passwords)
 MongoDB: records

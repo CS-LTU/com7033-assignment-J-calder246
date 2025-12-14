@@ -139,3 +139,66 @@
 
 </body>
 </html>
+
+_______________________________________
+
+
+ <h2>All records</h2>
+    <div class="card">
+    
+     <table class="custom-table">
+        
+        <thead>
+            <tr>
+                <th>ObjectID</th>
+                <th>ID</th>
+                <th>gender</th>
+                <th>age</th>
+                <th>hypertension</th>
+                <th>heart disease</th>
+                <th>ever married</th>
+                <th>work type</th>
+                <th>Residence type</th>
+                <th>AGL</th>
+                <th>bmi</th>
+                <th>smokes</th>
+                <th>stroke</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in records %}
+        <tr>
+            <td>{{ row.get('_id','') }}</td>
+            <td>{{ row.get('id','') }}</td>
+            <td>{{ row.get('gender','')}}</td>
+            <td>{{ row.get('age','')}}</td>
+            <td>{{ row.get('hypertension','')}}</td>
+            <td >{{ row.get('heart_disease','')}}</td>
+            <td >{{ row.get('ever_married','')}}</td>
+            <td >{{ row.get('work_type','')}}</td>
+            <td >{{ row.get('Residence_type','')}}</td>
+            <td >{{ row.get('avg_glucose_level','')}}</td>
+            <td >{{ row.get('bmi','')}}</td>
+            <td >{{ row.get('smoking_status','')}}</td>
+            <td >{{ row.get('stroke','')}}</td>
+            <td>
+               <a class="button"  href="{{ url_for('update_user', _id=row['_id']) }}">Update</a>
+               <input class="button" type="submit" value="Update">
+                <form class="inline" method="POST"  action="{{ url_for('delete_user', _id=row['_id']) }}" onsubmit="return confirm('Delete this record?');">
+                    <input class="button" type="submit" value="Delete">
+                </form>
+                
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+
+
+               
+        
+    </table>
+    </div>
+</div>
+
+{% endblock %}
